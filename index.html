@@ -340,7 +340,7 @@ textarea::placeholder { color: var(--text-muted); }
   gap: 28px; margin: 32px auto;
   max-width: 1200px;
 }
-.main-content { min-width: 0; }
+.main-content { min-width: 0; content-visibility: auto; contain-intrinsic-size: auto 800px; }
 .sidebar { position: sticky; top: calc(var(--nav-height) + 20px); align-self: start; }
 
 /* ===== Action Bar (share, reset) ===== */
@@ -602,6 +602,9 @@ footer .disclosure {
   .hero-badge { font-size: 11px; padding: 4px 12px; }
 }
 
+/* ===== Focus Visible ===== */
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+
 /* ===== Print ===== */
 @media print {
   .navbar, .scroll-top, .coupang-banner, .coupang-banner-side, .coupang-link,
@@ -627,7 +630,7 @@ footer .disclosure {
       <span class="progress-pct-text" id="navProgressCount">0/0</span>
     </div>
     <div class="nav-actions">
-      <button class="nav-btn" onclick="toggleTheme()" aria-label="다크모드 전환" id="themeBtn" title="다크모드 전환">🌙</button>
+      <button class="nav-btn" onclick="toggleTheme()" aria-label="다크모드 전환" aria-pressed="false" id="themeBtn" title="다크모드 전환">🌙</button>
     </div>
   </div>
 </nav>
@@ -720,7 +723,7 @@ footer .disclosure {
 </div>
 
 <!-- ===== Result Area ===== -->
-<div class="container" id="resultArea" style="display:none;">
+<div class="container" id="resultArea" style="display:none;" aria-live="polite">
   <div class="content-layout">
     <div class="main-content">
       <!-- Summary -->
@@ -831,23 +834,25 @@ function _d(e){const d=atob(e);let r='';for(let i=0;i<d.length;i++)r+=String.fro
 const _KEYS = { ai: _d('PwpaNhsBDkgIRFNFQEoVSjgRQiIQXwsgFHADfgJVdFV+KS4ALTQrLh1XAGsCVCtqDlIhBDMEKhEwYXt4UxkFUQALPwIOLzs3RlRRU05pFmYrCyN1KwIGDjR4Y2VnGBBIeQtCBw4HISQqY3FCWUh2YhZYIApRBBcwPmpyWFtoLnwWVCI2LwFRCTNDdntVdHkVHBEoMFpYJlc3VkJjUE83Ty4xAAc=') };
 
 document.addEventListener('DOMContentLoaded', function() {
-  localStorage.setItem('openaiKey', _KEYS.ai);
+  try { localStorage.setItem('openaiKey', _KEYS.ai); } catch(e) {}
   loadTheme();
   renderRecentSearches();
 });
 
 // ===== Theme =====
 function loadTheme() {
-  const saved = localStorage.getItem('tripready-theme') || 'light';
+  try { var saved = localStorage.getItem('tripready-theme') || 'light'; } catch(e) { var saved = 'light'; }
   document.documentElement.setAttribute('data-theme', saved);
   document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeBtn').setAttribute('aria-pressed', saved === 'dark' ? 'true' : 'false');
 }
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme');
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('tripready-theme', next);
+  try { localStorage.setItem('tripready-theme', next); } catch(e) {}
   document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeBtn').setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
 }
 
 // ===== Navbar scroll behavior =====
@@ -896,13 +901,13 @@ function addRecentSearch(query) {
   let recent = getRecentSearches().filter(q => q !== query);
   recent.unshift(query);
   if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
-  localStorage.setItem('tripready-recent', JSON.stringify(recent));
+  try { localStorage.setItem('tripready-recent', JSON.stringify(recent)); } catch(e) {}
   renderRecentSearches();
 }
 function removeRecentSearch(idx) {
   let recent = getRecentSearches();
   recent.splice(idx, 1);
-  localStorage.setItem('tripready-recent', JSON.stringify(recent));
+  try { localStorage.setItem('tripready-recent', JSON.stringify(recent)); } catch(e) {}
   renderRecentSearches();
 }
 function renderRecentSearches() {
@@ -940,7 +945,8 @@ function handleCoupangClick(el) {
 
 // ===== Clean JSON (강화) =====
 function cleanJson(text) {
-  let s = text.trim();
+  if (text == null) return {};
+  let s = String(text).trim();
   // 중첩 코드블록 처리
   s = s.replace(/^```+(?:json)?\s*/gi, '').replace(/\s*```+$/gi, '');
   s = s.trim();
@@ -985,7 +991,7 @@ function shareChecklist() {
 function resetAllChecks() {
   if (!currentSavedKey) return;
   checkStates = {};
-  localStorage.setItem(currentSavedKey, JSON.stringify(checkStates));
+  try { localStorage.setItem(currentSavedKey, JSON.stringify(checkStates)); } catch(e) {}
   document.querySelectorAll('.check-box').forEach(cb => {
     cb.classList.remove('checked');
     cb.closest('.checklist-item').classList.remove('checked');
@@ -1026,7 +1032,10 @@ function getErrorDetail(err) {
 // ===== API 호출 (재시도 포함) =====
 async function callTripAPI(apiKey, input, retryCount) {
   retryCount = retryCount || 0;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    signal: controller.signal,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -1058,6 +1067,7 @@ async function callTripAPI(apiKey, input, retryCount) {
     })
   });
 
+  clearTimeout(timeoutId);
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));
     const status = response.status;
@@ -1110,7 +1120,8 @@ async function generateChecklist() {
     }
   }, 2500);
 
-  const apiKey = localStorage.getItem('openaiKey');
+  let apiKey;
+  try { apiKey = localStorage.getItem('openaiKey'); } catch(e) {}
   if (!apiKey) { showError('API 키가 설정되지 않았습니다.'); resetBtn(); tripInput.disabled = false; clearInterval(loadingInterval); return; }
 
   try {
@@ -1127,7 +1138,8 @@ async function generateChecklist() {
     // Load saved check states
     const savedKey = 'tripready-checks-' + btoa(unescape(encodeURIComponent(input)));
     currentSavedKey = savedKey;
-    const saved = localStorage.getItem(savedKey);
+    let saved;
+    try { saved = localStorage.getItem(savedKey); } catch(e) {}
     checkStates = saved ? JSON.parse(saved) : {};
 
     renderResult(currentData, savedKey);
@@ -1191,7 +1203,7 @@ function renderResult(data, savedKey) {
         : '';
       itemsHtml += `
         <li class="checklist-item ${isChecked ? 'checked' : ''}" style="${isEssential ? 'border-left:3px solid #f59e0b;padding-left:14px;' : ''}">
-          <div class="check-box ${isChecked ? 'checked' : ''}" data-key="${key}" onclick="toggleCheck(this, '${savedKey}')"></div>
+          <div class="check-box ${isChecked ? 'checked' : ''}" data-key="${key}" role="checkbox" aria-checked="${isChecked}" aria-label="${escHtml(item.item)} 체크" tabindex="0" onclick="toggleCheck(this, '${savedKey}')" onkeydown="if(event.key===' '||event.key==='Enter'){event.preventDefault();toggleCheck(this,'${savedKey}');}"></div>
           <div class="item-info">
             <div class="item-top">
               ${icon ? `<span class="item-icon">${icon}</span>` : ''}
@@ -1243,7 +1255,7 @@ function updateProgress(checked, total) {
       <h3>📋 준비 현황</h3>
       <span class="progress-count">${checked} / ${total} 준비 완료</span>
     </div>
-    <div class="progress-bar">
+    <div class="progress-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="준비 진행률 ${pct}%">
       <div class="progress-fill" style="width:${pct}%"></div>
     </div>
     <p class="progress-text">${pct === 100 ? '🎉 완벽한 준비! 즐거운 여행 되세요!' : pct >= 75 ? '🔥 거의 다 됐어요! 조금만 더!' : pct >= 50 ? '👏 절반 완료! 잘하고 있어요!' : pct >= 25 ? '💪 좋은 시작이에요! 계속 챙겨봐요!' : `${pct}% 완료 — 화이팅! ✈️`}</p>
@@ -1259,9 +1271,10 @@ function toggleCheck(el, savedKey) {
   const key = el.dataset.key;
   const isChecked = !el.classList.contains('checked');
   el.classList.toggle('checked', isChecked);
+  el.setAttribute('aria-checked', isChecked.toString());
   el.closest('.checklist-item').classList.toggle('checked', isChecked);
   checkStates[key] = isChecked;
-  localStorage.setItem(savedKey, JSON.stringify(checkStates));
+  try { localStorage.setItem(savedKey, JSON.stringify(checkStates)); } catch(e) {}
 
   // Recount
   let total = 0, checked = 0;
