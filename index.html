@@ -472,10 +472,10 @@ textarea::placeholder { color: var(--text-muted); }
   font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 700;
   display: inline-flex; align-items: center; gap: 3px;
 }
-.badge-essential { background: #fef3c7; color: #92400e; }
-.badge-recommend { background: var(--primary-ultra-light); color: var(--primary-dark); }
-[data-theme="dark"] .badge-essential { background: #78350f; color: #fde68a; }
-[data-theme="dark"] .badge-recommend { background: #164e63; color: #67e8f9; }
+.badge-essential { background: #fef3c7; color: #92400e; font-weight:800; border: 1.5px solid #fcd34d; }
+.badge-recommend { background: var(--primary-ultra-light); color: var(--primary-dark); border: 1px solid var(--border); opacity:0.8; }
+[data-theme="dark"] .badge-essential { background: #78350f; color: #fde68a; border-color: #a16207; }
+[data-theme="dark"] .badge-recommend { background: #164e63; color: #67e8f9; border-color: #155e75; }
 
 /* Tip (hover) */
 .item-tip-wrapper { position: relative; display: inline-block; margin-top: 4px; }
@@ -725,14 +725,6 @@ footer .disclosure {
       <!-- Progress -->
       <div class="progress-section" id="progressSection"></div>
 
-      <!-- Mid Banner -->
-      <div class="mid-banner">
-        <a class="coupang-banner" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
-          <span class="banner-label">AD</span>
-          <span class="banner-text">🛒 여행용품 특가 모음</span>
-          <span class="banner-sub">쿠팡에서 여행 준비물을 한번에 구매하세요</span>
-        </a>
-      </div>
 
       <!-- Categories -->
       <div id="categoriesArea"></div>
@@ -742,15 +734,7 @@ footer .disclosure {
     <div class="sidebar">
       <a class="coupang-banner-side" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
         <div class="banner-label">AD</div>
-        <div class="banner-text">✈️ 여행용 캐리어<br>인기 상품</div>
-      </a>
-      <a class="coupang-banner-side" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
-        <div class="banner-label">AD</div>
-        <div class="banner-text">🧴 여행용 파우치<br>&amp; 세면도구</div>
-      </a>
-      <a class="coupang-banner-side" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
-        <div class="banner-label">AD</div>
-        <div class="banner-text">🔌 해외 여행용<br>멀티 어댑터</div>
+        <div class="banner-text">✈️ 여행 준비물<br>인기 상품 모음</div>
       </a>
     </div>
   </div>
@@ -819,16 +803,13 @@ footer .disclosure {
     <div class="footer-logo">✈️ Trip<span>Ready</span></div>
     <p>AI 기반 맞춤 여행 준비물 체크리스트</p>
     <p>&copy; 2026 TripReady. All rights reserved.</p>
-    <div class="disclosure">
-      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.<br>
-      본 사이트의 AI 추천은 참고용이며, 실제 여행 시 개인 상황에 맞게 조정하시기 바랍니다.
-    </div>
     <!-- Bottom Banner -->
     <a class="coupang-banner" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" style="margin-top:24px;" onclick="return handleCoupangClick(this);">
       <span class="banner-label">AD</span>
       <span class="banner-text">🎁 쿠팡 오늘의 특가</span>
       <span class="banner-sub">매일 달라지는 할인 혜택을 확인하세요</span>
     </a>
+    <p style="font-size:0.6rem;color:var(--text-muted);margin-top:16px;line-height:1.6;">이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다. 본 사이트의 AI 추천은 참고용이며, 실제 여행 시 개인 상황에 맞게 조정하시기 바랍니다.</p>
   </div>
 </footer>
 
@@ -1049,11 +1030,18 @@ async function generateChecklist() {
         messages: [
           {
             role: 'system',
-            content: `여행 준비물 전문가. 여행지/기간/유형에 맞는 준비물을 카테고리별로 추천.
-카테고리는 반드시 다음을 포함: 의류, 세면도구, 전자기기, 서류, 기타.
-각 아이템에 아이콘(emoji 1개)을 포함할 것.
+            content: `당신은 여행 준비물 전문가입니다. 여행지, 기간, 여행 유형, 계절, 날씨를 종합적으로 분석하여 체계적인 준비물 목록을 생성하세요.
+
+규칙:
+1. 카테고리는 반드시 6개 이상 포함: 의류, 세면도구, 전자기기, 서류/금융, 의약품, 편의용품, 기타
+2. 각 카테고리에 5~8개 아이템을 추천하세요
+3. 각 아이템에 예상 비용(이미 가지고 있을 수 있는 것은 "보유"로 표시)을 포함하세요
+4. "essential"이 true인 것은 반드시 챙겨야 할 필수 준비물, false는 있으면 좋은 것
+5. tip은 실용적이고 구체적인 팁을 제공하세요 (예: "기내 반입 100ml 이하 용기 필요")
+6. 각 아이템에 아이콘(emoji 1개)을 포함할 것
+
 반드시 JSON으로만 응답:
-{"destination":"여행지","summary":"여행요약","categories":[{"name":"카테고리","emoji":"이모지","items":[{"item":"준비물","icon":"아이콘이모지","essential":true/false,"tip":"팁","searchQuery":"쿠팡검색어"}]}]}`
+{"destination":"여행지","summary":"여행 일정과 특이사항 요약 2~3문장","categories":[{"name":"카테고리","emoji":"이모지","items":[{"item":"준비물","icon":"아이콘이모지","essential":true/false,"estimatedCost":"예상비용(예: 약 15,000원 또는 보유)","tip":"실용적 팁","searchQuery":"쿠팡검색어"}]}]}`
           },
           { role: 'user', content: input }
         ]
@@ -1128,23 +1116,23 @@ function renderResult(data, savedKey) {
       if (isChecked) checkedItems++;
       const icon = item.icon || '';
       const isEssential = item.essential;
+      const costDisplay = item.estimatedCost ? `<span style="font-size:11px;color:var(--text-muted);margin-left:auto;white-space:nowrap;font-weight:500;">${escHtml(item.estimatedCost)}</span>` : '';
       itemsHtml += `
-        <li class="checklist-item ${isChecked ? 'checked' : ''}">
+        <li class="checklist-item ${isChecked ? 'checked' : ''}" style="${isEssential ? 'border-left:3px solid #f59e0b;padding-left:14px;' : ''}">
           <div class="check-box ${isChecked ? 'checked' : ''}" data-key="${key}" onclick="toggleCheck(this, '${savedKey}')"></div>
           <div class="item-info">
             <div class="item-top">
               ${icon ? `<span class="item-icon">${icon}</span>` : ''}
               <span class="item-name">${escHtml(item.item)}</span>
-              ${isEssential ? '<span class="badge badge-essential">필수</span>' : '<span class="badge badge-recommend">추천</span>'}
+              ${isEssential ? '<span class="badge badge-essential">⚠️ 필수</span>' : '<span class="badge badge-recommend">💡 추천</span>'}
+              ${costDisplay}
             </div>
             ${item.tip ? `<div class="item-tip">💡 ${escHtml(item.tip)}</div>` : ''}
-            <div class="item-actions">
-              <a class="coupang-link" href="${getCoupangLink(item.searchQuery || item.item)}" target="_blank" rel="noopener noreferrer">🛒 쿠팡에서 구매</a>
-            </div>
           </div>
         </li>
       `;
     });
+    const catSearchQuery = cat.name + ' 여행용품';
     card.innerHTML = `
       <div class="category-header">
         <span class="category-emoji">${cat.emoji}</span>
@@ -1152,6 +1140,9 @@ function renderResult(data, savedKey) {
         <span class="category-count">${cat.items.length}개</span>
       </div>
       <ul class="checklist">${itemsHtml}</ul>
+      <div style="text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+        <a href="${getCoupangLink(catSearchQuery)}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:6px;color:var(--primary);font-size:13px;font-weight:600;text-decoration:none;padding:8px 20px;border:1.5px solid var(--primary);border-radius:10px;transition:all 0.2s;" onmouseover="this.style.background=this.style.borderColor;this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--primary)'">🛒 ${escHtml(cat.name)} 용품 한번에 보기</a>
+      </div>
     `;
     catArea.appendChild(card);
   });
