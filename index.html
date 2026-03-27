@@ -420,7 +420,17 @@ textarea::placeholder { color: var(--text-muted); }
 .category-header {
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 20px; font-size: 19px; font-weight: 800;
+  cursor: pointer; user-select: none; transition: opacity 0.2s;
 }
+.category-header:hover { opacity: 0.8; }
+.category-toggle-arrow {
+  font-size: 14px; color: var(--text-muted); margin-left: 8px;
+  transition: transform 0.3s;
+}
+.category-card.collapsed .category-toggle-arrow { transform: rotate(-90deg); }
+.category-card.collapsed .checklist,
+.category-card.collapsed > div:last-child { display: none; }
+.category-card.collapsed .category-header { margin-bottom: 0; }
 .category-emoji { font-size: 28px; }
 .category-count {
   font-size: 12px; font-weight: 600; color: var(--text-muted);
@@ -719,6 +729,7 @@ footer .disclosure {
       <!-- Action Bar -->
       <div class="action-bar">
         <button class="action-btn" onclick="shareChecklist()">📋 체크리스트 공유</button>
+        <button class="action-btn" onclick="window.print()">🖨️ 인쇄하기</button>
         <button class="action-btn danger" onclick="resetAllChecks()">🔄 전체 체크 해제</button>
       </div>
 
@@ -1196,9 +1207,10 @@ function renderResult(data, savedKey) {
     });
     const catSearchQuery = cat.name + ' 여행용품';
     card.innerHTML = `
-      <div class="category-header">
+      <div class="category-header" onclick="toggleCategory(this)">
         <span class="category-emoji">${cat.emoji}</span>
         <span>${escHtml(cat.name)}</span>
+        <span class="category-toggle-arrow">▼</span>
         <span class="category-count">${cat.items.length}개</span>
       </div>
       <ul class="checklist">${itemsHtml}</ul>
@@ -1234,7 +1246,7 @@ function updateProgress(checked, total) {
     <div class="progress-bar">
       <div class="progress-fill" style="width:${pct}%"></div>
     </div>
-    <p class="progress-text">${pct === 100 ? '🎉 모든 준비물을 챙겼어요! 즐거운 여행 되세요!' : `${pct}% 완료 — 화이팅! ✈️`}</p>
+    <p class="progress-text">${pct === 100 ? '🎉 완벽한 준비! 즐거운 여행 되세요!' : pct >= 75 ? '🔥 거의 다 됐어요! 조금만 더!' : pct >= 50 ? '👏 절반 완료! 잘하고 있어요!' : pct >= 25 ? '💪 좋은 시작이에요! 계속 챙겨봐요!' : `${pct}% 완료 — 화이팅! ✈️`}</p>
   `;
 
   // Nav mini progress
@@ -1265,6 +1277,20 @@ function escHtml(str) {
   d.textContent = str || '';
   return d.innerHTML;
 }
+
+// ===== Category Toggle =====
+function toggleCategory(header) {
+  const card = header.closest('.category-card');
+  card.classList.toggle('collapsed');
+}
+
+// ===== Enter Key =====
+document.getElementById('tripInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    generateChecklist();
+  }
+});
 </script>
 </body>
 </html>
