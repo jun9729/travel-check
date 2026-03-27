@@ -4,171 +4,297 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TripReady — AI 여행 준비물 체크리스트</title>
+<meta name="description" content="AI가 여행지와 일정에 맞는 완벽한 준비물 체크리스트를 생성합니다. 여행용품도 바로 구매!">
+<meta name="keywords" content="여행준비물,체크리스트,AI여행,캐리어,여행용품">
+<meta property="og:title" content="TripReady — AI 여행 준비물 체크리스트">
+<meta property="og:description" content="AI가 여행지와 일정에 맞는 완벽한 준비물 체크리스트를 생성합니다.">
+<meta property="og:type" content="website">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://tripready.kr/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+/* ===== CSS Variables ===== */
 :root {
   --primary: #0891b2;
   --primary-dark: #0e7490;
   --primary-light: #22d3ee;
+  --primary-ultra-light: #ecfeff;
   --accent: #f59e0b;
   --accent-dark: #d97706;
   --bg: #f0f9ff;
   --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
   --text: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --border: #e2e8f0;
   --success: #10b981;
+  --success-light: #d1fae5;
+  --danger: #ef4444;
   --radius: 16px;
+  --radius-sm: 10px;
   --shadow: 0 4px 24px rgba(8,145,178,0.08);
   --shadow-lg: 0 8px 40px rgba(8,145,178,0.12);
+  --shadow-xl: 0 20px 60px rgba(8,145,178,0.15);
+  --nav-height: 64px;
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 [data-theme="dark"] {
   --bg: #0c1222;
   --bg-card: #1e293b;
+  --bg-card-hover: #263548;
   --text: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
   --border: #334155;
+  --primary-ultra-light: #164e63;
+  --success-light: #064e3b;
   --shadow: 0 4px 24px rgba(0,0,0,0.3);
   --shadow-lg: 0 8px 40px rgba(0,0,0,0.4);
+  --shadow-xl: 0 20px 60px rgba(0,0,0,0.5);
 }
-* { margin:0; padding:0; box-sizing:border-box; }
+
+/* ===== Reset & Base ===== */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-height) + 20px); }
 body {
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
-  transition: background 0.3s, color 0.3s;
+  line-height: 1.7;
+  transition: background var(--transition), color var(--transition);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  -webkit-font-smoothing: antialiased;
 }
-a { color: var(--primary); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a { color: var(--primary); text-decoration: none; transition: color var(--transition); }
+a:hover { color: var(--primary-dark); }
+::selection { background: var(--primary-light); color: #fff; }
 
-/* Theme Toggle */
-.theme-toggle {
-  position: fixed; top: 20px; right: 20px; z-index: 1000;
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: 50%; width: 44px; height: 44px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 20px; box-shadow: var(--shadow);
-  transition: all 0.3s;
+/* ===== Sticky Navigation ===== */
+.navbar {
+  position: sticky; top: 0; z-index: 1000;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  height: var(--nav-height);
+  transition: background var(--transition), border var(--transition), box-shadow var(--transition);
 }
-.theme-toggle:hover { transform: scale(1.1); }
-
-/* Scroll to Top */
-.scroll-top {
-  position: fixed; bottom: 30px; right: 30px; z-index: 1000;
-  background: var(--primary); color: #fff;
-  border: none; border-radius: 50%; width: 48px; height: 48px;
-  display: none; align-items: center; justify-content: center;
-  cursor: pointer; font-size: 22px; box-shadow: var(--shadow-lg);
-  transition: all 0.3s;
+[data-theme="dark"] .navbar {
+  background: rgba(30,41,59,0.88);
 }
-.scroll-top.show { display: flex; }
-.scroll-top:hover { background: var(--primary-dark); transform: translateY(-3px); }
+.navbar.scrolled {
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto; padding: 0 24px;
+  height: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  font-size: 22px; font-weight: 800; color: var(--text);
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+}
+.nav-logo span { color: var(--accent); }
+.nav-actions { display: flex; align-items: center; gap: 12px; }
+.nav-btn {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 12px; cursor: pointer;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); color: var(--text);
+}
+.nav-btn:hover { background: var(--primary-ultra-light); border-color: var(--primary); }
+.nav-progress-mini {
+  display: none; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 600; color: var(--primary);
+}
+.nav-progress-mini.show { display: flex; }
+.nav-progress-bar-mini {
+  width: 100px; height: 6px; background: var(--border);
+  border-radius: 3px; overflow: hidden;
+}
+.nav-progress-fill-mini {
+  height: 100%; background: linear-gradient(90deg, var(--primary), var(--success));
+  border-radius: 3px; transition: width 0.5s ease;
+}
 
-/* Header */
-header {
-  background: linear-gradient(135deg, #0e7490 0%, #0891b2 30%, #22d3ee 100%);
+/* ===== Hero Section ===== */
+.hero {
+  background: linear-gradient(135deg, #0e7490 0%, #0891b2 40%, #22d3ee 100%);
   color: #fff; text-align: center;
-  padding: 60px 20px 80px;
+  padding: 80px 24px 100px;
   position: relative; overflow: hidden;
 }
-header::before {
+.hero::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'/%3E%3C/svg%3E") no-repeat bottom;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23ffffff' fill-opacity='0.06' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'/%3E%3C/svg%3E") no-repeat bottom;
   background-size: cover;
 }
-header * { position: relative; z-index: 1; }
-.logo { font-size: 48px; font-weight: 900; margin-bottom: 8px; letter-spacing: -1px; }
-.logo span { color: var(--accent); }
-.subtitle { font-size: 18px; opacity: 0.9; margin-bottom: 8px; font-weight: 300; }
-.tagline { font-size: 14px; opacity: 0.7; }
+.hero::after {
+  content: '';
+  position: absolute; bottom: -2px; left: 0; right: 0; height: 60px;
+  background: var(--bg);
+  clip-path: ellipse(55% 100% at 50% 100%);
+  transition: background var(--transition);
+}
+.hero * { position: relative; z-index: 1; }
+.hero-emoji { font-size: 64px; margin-bottom: 16px; display: block; animation: floatEmoji 3s ease-in-out infinite; }
+@keyframes floatEmoji {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.hero-title { font-size: 48px; font-weight: 900; letter-spacing: -1.5px; margin-bottom: 12px; }
+.hero-title span { color: var(--accent); }
+.hero-subtitle { font-size: 20px; opacity: 0.92; font-weight: 400; margin-bottom: 6px; }
+.hero-tagline { font-size: 14px; opacity: 0.7; }
+.hero-badges {
+  display: flex; justify-content: center; gap: 12px; margin-top: 24px; flex-wrap: wrap;
+}
+.hero-badge {
+  background: rgba(255,255,255,0.18); backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 24px; padding: 6px 18px; font-size: 13px; font-weight: 500;
+}
 
-/* Coupang Banner */
+/* ===== Container ===== */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* ===== Coupang Banners ===== */
 .coupang-banner {
   display: block; text-align: center;
   background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px 20px;
-  margin: 16px auto; max-width: 728px;
-  box-shadow: var(--shadow); transition: all 0.3s;
+  border-radius: var(--radius); padding: 18px 24px;
+  margin: 20px auto; max-width: 728px;
+  box-shadow: var(--shadow); transition: all var(--transition);
   text-decoration: none !important;
 }
 .coupang-banner:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
 .coupang-banner .banner-label {
-  font-size: 11px; color: var(--text-muted);
-  margin-bottom: 4px; display: block;
+  font-size: 10px; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 1px; margin-bottom: 4px; display: block;
 }
-.coupang-banner .banner-text {
-  font-size: 15px; font-weight: 600; color: var(--primary);
-}
-.coupang-banner .banner-sub {
-  font-size: 12px; color: var(--text-secondary); margin-top: 4px;
-}
+.coupang-banner .banner-text { font-size: 15px; font-weight: 700; color: var(--primary); }
+.coupang-banner .banner-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
 .coupang-banner-side {
   background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
+  border-radius: var(--radius); padding: 20px 16px;
   box-shadow: var(--shadow); text-align: center;
   text-decoration: none !important; display: block;
-  transition: all 0.3s; margin-bottom: 16px;
+  transition: all var(--transition); margin-bottom: 16px;
 }
-.coupang-banner-side:hover { box-shadow: var(--shadow-lg); }
-.coupang-banner-side .banner-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
-.coupang-banner-side .banner-text { font-size: 14px; font-weight: 600; color: var(--primary); }
+.coupang-banner-side:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.coupang-banner-side .banner-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.coupang-banner-side .banner-text { font-size: 14px; font-weight: 700; color: var(--primary); line-height: 1.5; }
 
-/* Main */
-.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-
-/* Top Banner */
+/* ===== Top Banner Area ===== */
 .top-banner { margin-top: -40px; position: relative; z-index: 2; }
 
-/* Input Section */
-.input-section {
+/* ===== Search Card ===== */
+.search-card {
   background: var(--bg-card); border-radius: var(--radius);
-  padding: 40px; margin: 30px auto; max-width: 800px;
-  box-shadow: var(--shadow-lg); text-align: center;
+  padding: 40px; margin: 32px auto; max-width: 840px;
+  box-shadow: var(--shadow-xl); text-align: center;
+  border: 1px solid var(--border);
+  transition: all var(--transition);
 }
-.input-section h2 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-.input-section p { color: var(--text-secondary); margin-bottom: 24px; font-size: 15px; }
+.search-card h2 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.search-card > p { color: var(--text-secondary); margin-bottom: 20px; font-size: 15px; }
+
+/* Quick Filters */
+.quick-filters {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  justify-content: center; margin-bottom: 24px;
+}
+.filter-chip {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 24px; padding: 8px 20px; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all var(--transition); color: var(--text-secondary);
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.filter-chip:hover, .filter-chip.active {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(8,145,178,0.3);
+}
+
 .input-wrapper { position: relative; }
 textarea {
-  width: 100%; min-height: 100px; padding: 16px 20px;
-  border: 2px solid var(--border); border-radius: 12px;
+  width: 100%; min-height: 110px; padding: 18px 20px;
+  border: 2px solid var(--border); border-radius: 14px;
   font-family: 'Noto Sans KR', sans-serif; font-size: 16px;
   resize: vertical; background: var(--bg); color: var(--text);
-  transition: border-color 0.3s;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
-textarea:focus { outline: none; border-color: var(--primary); }
+textarea:focus {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(8,145,178,0.1);
+}
 textarea::placeholder { color: var(--text-muted); }
+
+/* Recent Searches */
+.recent-searches {
+  display: none; margin: 12px 0 0; text-align: left;
+}
+.recent-searches.show { display: block; }
+.recent-label {
+  font-size: 12px; color: var(--text-muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+}
+.recent-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.recent-item {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 12px; font-size: 13px;
+  cursor: pointer; transition: all 0.2s; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 6px;
+}
+.recent-item:hover { border-color: var(--primary); color: var(--primary); }
+.recent-item .remove-recent {
+  font-size: 14px; color: var(--text-muted); cursor: pointer;
+  line-height: 1; padding: 0 2px;
+}
+.recent-item .remove-recent:hover { color: var(--danger); }
+
+/* Example Chips */
 .examples {
   display: flex; flex-wrap: wrap; gap: 8px;
-  justify-content: center; margin: 16px 0 24px;
+  justify-content: center; margin: 16px 0 28px;
 }
 .example-chip {
   background: var(--bg); border: 1px solid var(--border);
-  border-radius: 20px; padding: 6px 16px; font-size: 13px;
+  border-radius: 24px; padding: 7px 18px; font-size: 13px;
   cursor: pointer; transition: all 0.2s; color: var(--text-secondary);
+  font-family: 'Noto Sans KR', sans-serif;
 }
 .example-chip:hover {
   background: var(--primary); color: #fff; border-color: var(--primary);
 }
+
+/* Generate Button */
+.btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 .generate-btn {
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: #fff; border: none; border-radius: 12px;
-  padding: 16px 48px; font-size: 17px; font-weight: 700;
-  cursor: pointer; transition: all 0.3s;
+  color: #fff; border: none; border-radius: 14px;
+  padding: 16px 52px; font-size: 17px; font-weight: 700;
+  cursor: pointer; transition: all var(--transition);
   font-family: 'Noto Sans KR', sans-serif;
   display: inline-flex; align-items: center; gap: 10px;
+  position: relative; overflow: hidden;
 }
-.generate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(8,145,178,0.35); }
+.generate-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.15));
+  opacity: 0; transition: opacity var(--transition);
+}
+.generate-btn:hover::before { opacity: 1; }
+.generate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(8,145,178,0.4); }
 .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.generate-btn:disabled::before { display: none; }
 .generate-btn .spinner {
-  width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
+  width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,0.3);
   border-top-color: #fff; border-radius: 50%;
   animation: spin 0.8s linear infinite; display: none;
 }
@@ -176,258 +302,538 @@ textarea::placeholder { color: var(--text-muted); }
 .generate-btn.loading .btn-text { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Two Column Layout */
-.content-layout {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 24px; margin: 30px auto;
-  max-width: 1200px;
-}
-.main-content { min-width: 0; }
-.sidebar { position: sticky; top: 20px; align-self: start; }
-
-/* Progress Bar */
-.progress-section {
+/* ===== Skeleton Loading ===== */
+.skeleton-container { display: none; margin: 30px auto; max-width: 1200px; }
+.skeleton-container.show { display: block; }
+.skeleton-card {
   background: var(--bg-card); border-radius: var(--radius);
-  padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow);
+  padding: 28px; margin-bottom: 20px; box-shadow: var(--shadow);
+  border-left: 4px solid var(--border);
 }
-.progress-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 12px;
+.skeleton-line {
+  height: 14px; background: var(--border); border-radius: 7px;
+  margin-bottom: 16px; animation: shimmer 1.5s infinite;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
 }
-.progress-header h3 { font-size: 16px; font-weight: 600; }
-.progress-count { font-size: 14px; color: var(--primary); font-weight: 700; }
-.progress-bar {
-  height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden;
-}
-.progress-fill {
-  height: 100%; background: linear-gradient(90deg, var(--primary), var(--success));
-  border-radius: 5px; transition: width 0.5s ease;
-}
-.progress-text { text-align: center; margin-top: 8px; font-size: 13px; color: var(--text-secondary); }
+.skeleton-line.w60 { width: 60%; }
+.skeleton-line.w80 { width: 80%; }
+.skeleton-line.w40 { width: 40%; }
+.skeleton-line.w100 { width: 100%; }
+.skeleton-line.h20 { height: 20px; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-/* Category */
-.category-card {
-  background: var(--bg-card); border-radius: var(--radius);
-  padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow);
-  border-left: 4px solid var(--primary);
-}
-.category-header {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 16px; font-size: 18px; font-weight: 700;
-}
-.category-emoji { font-size: 24px; }
-.checklist { list-style: none; }
-.checklist-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px 0; border-bottom: 1px solid var(--border);
-  transition: background 0.2s;
-}
-.checklist-item:last-child { border-bottom: none; }
-.checklist-item:hover { background: rgba(8,145,178,0.03); border-radius: 8px; padding-left: 8px; padding-right: 8px; }
-.checklist-item.checked .item-name { text-decoration: line-through; color: var(--text-muted); }
-.checklist-item.checked .item-tip { color: var(--text-muted); }
-.check-box {
-  width: 22px; height: 22px; min-width: 22px;
-  border: 2px solid var(--border); border-radius: 6px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s; margin-top: 2px;
-}
-.check-box:hover { border-color: var(--primary); }
-.check-box.checked {
-  background: var(--success); border-color: var(--success);
-}
-.check-box.checked::after {
-  content: '\2713'; color: #fff; font-size: 14px; font-weight: 700;
-}
-.item-info { flex: 1; }
-.item-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.item-name { font-size: 15px; font-weight: 500; }
-.essential-badge {
-  background: #fef3c7; color: #92400e; font-size: 11px;
-  padding: 2px 8px; border-radius: 10px; font-weight: 600;
-}
-[data-theme="dark"] .essential-badge { background: #78350f; color: #fde68a; }
-.item-tip { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-.item-actions { margin-top: 8px; }
-.coupang-link {
-  display: inline-flex; align-items: center; gap: 4px;
-  background: var(--accent); color: #fff;
-  padding: 4px 12px; border-radius: 6px;
-  font-size: 12px; font-weight: 600;
-  transition: all 0.2s; text-decoration: none !important;
-}
-.coupang-link:hover { background: var(--accent-dark); transform: translateY(-1px); }
-
-/* Summary */
-.summary-card {
-  background: var(--bg-card); border-radius: var(--radius);
-  padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow);
-  border-top: 4px solid var(--accent);
-}
-.summary-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-.summary-card .dest { font-size: 15px; color: var(--text-secondary); }
-
-/* Loading */
-.loading-overlay {
-  display: none; text-align: center; padding: 60px 20px;
-}
-.loading-overlay.show { display: block; }
-.loading-dots { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
-.loading-dots span {
-  width: 12px; height: 12px; background: var(--primary);
-  border-radius: 50%; animation: bounce 1.4s ease-in-out infinite;
-}
-.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-  40% { transform: scale(1); opacity: 1; }
-}
-
-/* Error */
+/* ===== Error ===== */
 .error-msg {
   display: none; background: #fef2f2; border: 1px solid #fecaca;
-  color: #991b1b; padding: 16px; border-radius: 12px;
-  margin: 16px auto; max-width: 800px; text-align: center;
+  color: #991b1b; padding: 16px 24px; border-radius: 14px;
+  margin: 16px auto; max-width: 840px; text-align: center;
+  font-weight: 500;
 }
 [data-theme="dark"] .error-msg { background: #450a0a; border-color: #7f1d1d; color: #fca5a5; }
 .error-msg.show { display: block; }
 
-/* Middle Banner */
-.mid-banner { margin: 20px 0; }
+/* ===== Two Column Layout ===== */
+.content-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 28px; margin: 32px auto;
+  max-width: 1200px;
+}
+.main-content { min-width: 0; }
+.sidebar { position: sticky; top: calc(var(--nav-height) + 20px); align-self: start; }
 
-/* Footer */
+/* ===== Action Bar (share, reset) ===== */
+.action-bar {
+  display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.action-btn {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 20px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all var(--transition); color: var(--text-secondary);
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.action-btn:hover {
+  background: var(--primary-ultra-light); border-color: var(--primary); color: var(--primary);
+}
+.action-btn.danger:hover {
+  background: #fef2f2; border-color: var(--danger); color: var(--danger);
+}
+[data-theme="dark"] .action-btn.danger:hover { background: #450a0a; }
+.toast {
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #1e293b; color: #fff; padding: 12px 28px;
+  border-radius: 12px; font-size: 14px; font-weight: 500;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25); z-index: 9999;
+  opacity: 0; transition: all 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== Progress Section ===== */
+.progress-section {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 24px 28px; margin-bottom: 24px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.progress-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.progress-header h3 { font-size: 16px; font-weight: 700; }
+.progress-count { font-size: 15px; color: var(--primary); font-weight: 800; }
+.progress-bar {
+  height: 12px; background: var(--bg); border-radius: 6px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; border-radius: 6px; transition: width 0.5s ease;
+  background: linear-gradient(90deg, var(--primary), var(--success));
+}
+.progress-text {
+  text-align: center; margin-top: 10px;
+  font-size: 13px; color: var(--text-secondary); font-weight: 500;
+}
+
+/* ===== Summary Card ===== */
+.summary-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow);
+  border-top: 4px solid var(--accent); border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
+}
+.summary-card h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.summary-card .dest { font-size: 15px; color: var(--text-secondary); line-height: 1.7; }
+
+/* ===== Category Card ===== */
+.category-card {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 28px; margin-bottom: 24px; box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--primary);
+  transition: all var(--transition);
+}
+.category-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+.category-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; font-size: 19px; font-weight: 800;
+}
+.category-emoji { font-size: 28px; }
+.category-count {
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  background: var(--bg); border-radius: 12px; padding: 3px 10px;
+  margin-left: auto;
+}
+.checklist { list-style: none; }
+
+/* ===== Checklist Item ===== */
+.checklist-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 12px; border-bottom: 1px solid var(--border);
+  transition: all 0.2s; border-radius: 10px; margin: 0 -12px;
+}
+.checklist-item:last-child { border-bottom: none; }
+.checklist-item:hover { background: var(--bg-card-hover); }
+.checklist-item.checked .item-name { text-decoration: line-through; color: var(--text-muted); }
+.checklist-item.checked .item-tip { color: var(--text-muted); }
+
+/* Custom Checkbox */
+.check-box {
+  width: 24px; height: 24px; min-width: 24px;
+  border: 2.5px solid var(--border); border-radius: 7px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1); margin-top: 2px;
+  position: relative;
+}
+.check-box:hover { border-color: var(--primary); background: var(--primary-ultra-light); }
+.check-box.checked {
+  background: var(--success); border-color: var(--success);
+  animation: checkPop 0.3s ease;
+}
+.check-box.checked::after {
+  content: '\2713'; color: #fff; font-size: 15px; font-weight: 800;
+}
+@keyframes checkPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.item-info { flex: 1; min-width: 0; }
+.item-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.item-name { font-size: 15px; font-weight: 600; transition: all 0.2s; }
+.item-icon { font-size: 18px; }
+
+/* Badges */
+.badge {
+  font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.badge-essential { background: #fef3c7; color: #92400e; }
+.badge-recommend { background: var(--primary-ultra-light); color: var(--primary-dark); }
+[data-theme="dark"] .badge-essential { background: #78350f; color: #fde68a; }
+[data-theme="dark"] .badge-recommend { background: #164e63; color: #67e8f9; }
+
+/* Tip (hover) */
+.item-tip-wrapper { position: relative; display: inline-block; margin-top: 4px; }
+.item-tip {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+  padding: 2px 0;
+}
+.tip-toggle {
+  font-size: 12px; color: var(--primary); cursor: pointer;
+  font-weight: 600; margin-top: 3px; display: inline-flex; align-items: center; gap: 3px;
+}
+.tip-toggle:hover { text-decoration: underline; }
+
+/* Item Actions */
+.item-actions { margin-top: 8px; }
+.coupang-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff; padding: 5px 14px; border-radius: 8px;
+  font-size: 12px; font-weight: 700; transition: all 0.2s;
+  text-decoration: none !important; box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+}
+.coupang-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245,158,11,0.4);
+  color: #fff;
+}
+
+/* ===== Mid Banner ===== */
+.mid-banner { margin: 24px 0; }
+
+/* ===== FAQ Accordion ===== */
+.faq-section {
+  margin: 40px auto; max-width: 840px;
+}
+.faq-section h2 {
+  font-size: 24px; font-weight: 800; margin-bottom: 20px;
+  text-align: center;
+}
+.faq-item {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); margin-bottom: 10px;
+  overflow: hidden; transition: all var(--transition);
+}
+.faq-item:hover { box-shadow: var(--shadow); }
+.faq-question {
+  padding: 18px 24px; cursor: pointer; font-weight: 600;
+  font-size: 15px; display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+  transition: background var(--transition);
+  user-select: none;
+}
+.faq-question:hover { background: var(--bg-card-hover); }
+.faq-arrow {
+  font-size: 14px; transition: transform 0.3s; flex-shrink: 0;
+  color: var(--text-muted);
+}
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-answer {
+  max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+}
+.faq-answer-inner {
+  padding: 0 24px 20px;
+  font-size: 14px; color: var(--text-secondary); line-height: 1.8;
+}
+
+/* ===== Scroll to Top ===== */
+.scroll-top {
+  position: fixed; bottom: 32px; right: 32px; z-index: 1000;
+  background: var(--primary); color: #fff;
+  border: none; border-radius: 14px; width: 50px; height: 50px;
+  display: none; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 20px; box-shadow: var(--shadow-lg);
+  transition: all var(--transition);
+}
+.scroll-top.show { display: flex; }
+.scroll-top:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: var(--shadow-xl); }
+
+/* ===== Footer ===== */
 footer {
   background: var(--bg-card); border-top: 1px solid var(--border);
-  padding: 40px 20px; text-align: center; margin-top: auto;
+  padding: 48px 24px 40px; text-align: center; margin-top: auto;
+  transition: background var(--transition), border var(--transition);
 }
-footer p { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+.footer-inner { max-width: 800px; margin: 0 auto; }
+.footer-logo { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.footer-logo span { color: var(--accent); }
+footer p { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
 footer .disclosure {
-  font-size: 12px; color: var(--text-muted); max-width: 600px;
-  margin: 12px auto 0; line-height: 1.8;
+  font-size: 12px; color: var(--text-muted); max-width: 620px;
+  margin: 16px auto 0; line-height: 1.9;
+  background: var(--bg); padding: 16px 24px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
 }
 
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 900px) {
   .content-layout { grid-template-columns: 1fr; }
   .sidebar { position: static; }
+  .nav-progress-mini .progress-pct-text { display: none; }
 }
 @media (max-width: 600px) {
-  header { padding: 40px 16px 60px; }
-  .logo { font-size: 32px; }
-  .subtitle { font-size: 15px; }
-  .input-section { padding: 24px 16px; }
-  .category-card { padding: 16px; }
-  .generate-btn { width: 100%; justify-content: center; }
+  .hero { padding: 50px 16px 70px; }
+  .hero-emoji { font-size: 48px; }
+  .hero-title { font-size: 30px; }
+  .hero-subtitle { font-size: 16px; }
+  .search-card { padding: 24px 16px; margin: 24px auto; }
+  .category-card { padding: 20px 14px; }
+  .generate-btn { width: 100%; justify-content: center; padding: 16px 24px; }
+  .action-bar { justify-content: center; }
+  .faq-question { padding: 14px 16px; font-size: 14px; }
+  .nav-progress-bar-mini { width: 60px; }
+  .hero-badges { gap: 6px; }
+  .hero-badge { font-size: 11px; padding: 4px 12px; }
+}
+
+/* ===== Print ===== */
+@media print {
+  .navbar, .scroll-top, .coupang-banner, .coupang-banner-side, .coupang-link,
+  .action-bar, .sidebar, .faq-section, .mid-banner, .top-banner, footer { display: none !important; }
+  .content-layout { grid-template-columns: 1fr !important; }
+  .category-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
 }
 </style>
 </head>
 <body>
-<!-- Theme Toggle -->
-<button class="theme-toggle" onclick="toggleTheme()" aria-label="다크모드 전환">🌙</button>
 
-<!-- Scroll to Top -->
-<button class="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로">↑</button>
+<!-- ===== Sticky Navigation ===== -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      ✈️ Trip<span>Ready</span>
+    </div>
+    <div class="nav-progress-mini" id="navProgressMini">
+      <span id="navProgressText">0%</span>
+      <div class="nav-progress-bar-mini">
+        <div class="nav-progress-fill-mini" id="navProgressFill" style="width:0%"></div>
+      </div>
+      <span class="progress-pct-text" id="navProgressCount">0/0</span>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="toggleTheme()" aria-label="다크모드 전환" id="themeBtn" title="다크모드 전환">🌙</button>
+    </div>
+  </div>
+</nav>
 
-<!-- Header -->
-<header>
-  <div class="logo">✈️ Trip<span>Ready</span></div>
-  <p class="subtitle">AI가 추천하는 맞춤 여행 준비물 체크리스트</p>
-  <p class="tagline">여행 정보를 입력하면 AI가 필요한 준비물을 자동으로 생성합니다</p>
+<!-- ===== Hero ===== -->
+<header class="hero">
+  <span class="hero-emoji">✈️</span>
+  <h1 class="hero-title">Trip<span>Ready</span></h1>
+  <p class="hero-subtitle">AI가 추천하는 맞춤 여행 준비물 체크리스트</p>
+  <p class="hero-tagline">여행 정보를 입력하면 AI가 필요한 준비물을 자동으로 생성합니다</p>
+  <div class="hero-badges">
+    <span class="hero-badge">🤖 GPT-4o 기반</span>
+    <span class="hero-badge">✅ 실시간 체크리스트</span>
+    <span class="hero-badge">🛒 원클릭 구매</span>
+  </div>
 </header>
 
-<!-- Top Coupang Banner -->
+<!-- ===== Top Coupang Banner ===== -->
 <div class="container top-banner">
   <a class="coupang-banner" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
-    <span class="banner-label">광고</span>
+    <span class="banner-label">AD</span>
     <span class="banner-text">🧳 여행 준비, 쿠팡에서 한번에!</span>
     <span class="banner-sub">여행 필수템을 최저가로 만나보세요</span>
   </a>
 </div>
 
-<!-- Input Section -->
+<!-- ===== Search Card ===== -->
 <div class="container">
-  <div class="input-section">
+  <div class="search-card" id="searchCard">
     <h2>🗺️ 어디로 여행가시나요?</h2>
     <p>여행지, 기간, 여행 유형을 자유롭게 입력해 주세요</p>
+
+    <!-- Quick Filters -->
+    <div class="quick-filters">
+      <button class="filter-chip" data-filter="국내여행" onclick="applyFilter(this)">🇰🇷 국내여행</button>
+      <button class="filter-chip" data-filter="해외여행" onclick="applyFilter(this)">🌍 해외여행</button>
+      <button class="filter-chip" data-filter="캠핑" onclick="applyFilter(this)">⛺ 캠핑</button>
+      <button class="filter-chip" data-filter="비즈니스출장" onclick="applyFilter(this)">💼 비즈니스출장</button>
+    </div>
+
     <div class="input-wrapper">
       <textarea id="tripInput" placeholder="예: 제주도 2박3일 가족여행&#10;&#10;상세하게 입력할수록 더 정확한 준비물을 추천받을 수 있어요!"></textarea>
     </div>
+
+    <!-- Recent Searches -->
+    <div class="recent-searches" id="recentSearches">
+      <div class="recent-label">최근 검색</div>
+      <div class="recent-list" id="recentList"></div>
+    </div>
+
     <div class="examples">
       <span class="example-chip" onclick="setExample(this)">🏝️ 제주도 2박3일 가족여행</span>
       <span class="example-chip" onclick="setExample(this)">🎒 유럽 배낭여행 2주</span>
       <span class="example-chip" onclick="setExample(this)">🗼 일본 도쿄 3박4일 혼행</span>
       <span class="example-chip" onclick="setExample(this)">⛺ 캠핑 1박2일</span>
+      <span class="example-chip" onclick="setExample(this)">💼 미국 출장 5일</span>
     </div>
-    <button class="generate-btn" id="generateBtn" onclick="generateChecklist()">
-      <span class="btn-text">✨ AI 준비물 생성</span>
-      <span class="spinner"></span>
-      <span class="loading-text" style="display:none;">AI가 분석 중...</span>
-    </button>
+
+    <div class="btn-group">
+      <button class="generate-btn" id="generateBtn" onclick="generateChecklist()">
+        <span class="btn-text">✨ AI 준비물 생성</span>
+        <span class="spinner"></span>
+        <span class="loading-text" style="display:none;">AI가 분석 중...</span>
+      </button>
+    </div>
   </div>
 </div>
 
-<!-- Error -->
+<!-- ===== Error ===== -->
 <div class="error-msg" id="errorMsg"></div>
 
-<!-- Loading -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-dots"><span></span><span></span><span></span></div>
-  <p style="font-size:16px;font-weight:600;">AI가 맞춤 준비물을 생성하고 있어요...</p>
-  <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;">여행지와 기간에 맞는 최적의 체크리스트를 만들고 있습니다</p>
+<!-- ===== Skeleton Loading ===== -->
+<div class="container skeleton-container" id="skeletonLoading">
+  <div class="skeleton-card">
+    <div class="skeleton-line h20 w60"></div>
+    <div class="skeleton-line w80"></div>
+    <div class="skeleton-line w40"></div>
+  </div>
+  <div class="skeleton-card">
+    <div class="skeleton-line h20 w40"></div>
+    <div class="skeleton-line w100"></div>
+    <div class="skeleton-line w80"></div>
+    <div class="skeleton-line w60"></div>
+  </div>
+  <div class="skeleton-card">
+    <div class="skeleton-line h20 w60"></div>
+    <div class="skeleton-line w100"></div>
+    <div class="skeleton-line w80"></div>
+  </div>
 </div>
 
-<!-- Result -->
+<!-- ===== Result Area ===== -->
 <div class="container" id="resultArea" style="display:none;">
   <div class="content-layout">
     <div class="main-content">
       <!-- Summary -->
       <div class="summary-card" id="summaryCard"></div>
+
+      <!-- Action Bar -->
+      <div class="action-bar">
+        <button class="action-btn" onclick="shareChecklist()">📋 체크리스트 공유</button>
+        <button class="action-btn danger" onclick="resetAllChecks()">🔄 전체 체크 해제</button>
+      </div>
+
       <!-- Progress -->
       <div class="progress-section" id="progressSection"></div>
+
       <!-- Mid Banner -->
       <div class="mid-banner">
         <a class="coupang-banner" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
-          <span class="banner-label">광고</span>
+          <span class="banner-label">AD</span>
           <span class="banner-text">🛒 여행용품 특가 모음</span>
           <span class="banner-sub">쿠팡에서 여행 준비물을 한번에 구매하세요</span>
         </a>
       </div>
+
       <!-- Categories -->
       <div id="categoriesArea"></div>
     </div>
+
+    <!-- Sidebar -->
     <div class="sidebar">
-      <!-- Side Banners -->
       <a class="coupang-banner-side" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
-        <div class="banner-label">광고</div>
+        <div class="banner-label">AD</div>
         <div class="banner-text">✈️ 여행용 캐리어<br>인기 상품</div>
       </a>
       <a class="coupang-banner-side" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
-        <div class="banner-label">광고</div>
-        <div class="banner-text">🧴 여행용 파우치<br>& 세면도구</div>
+        <div class="banner-label">AD</div>
+        <div class="banner-text">🧴 여행용 파우치<br>&amp; 세면도구</div>
+      </a>
+      <a class="coupang-banner-side" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" onclick="return handleCoupangClick(this);">
+        <div class="banner-label">AD</div>
+        <div class="banner-text">🔌 해외 여행용<br>멀티 어댑터</div>
       </a>
     </div>
   </div>
 </div>
 
-<!-- Footer -->
+<!-- ===== FAQ Section ===== -->
+<div class="container">
+  <section class="faq-section" id="faqSection">
+    <h2>❓ 자주 묻는 질문</h2>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>TripReady는 어떤 서비스인가요?</span>
+        <span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">
+          TripReady는 AI(GPT-4o)를 활용하여 여행지, 기간, 여행 유형에 맞는 맞춤 준비물 체크리스트를 자동으로 생성하는 서비스입니다. 생성된 체크리스트에서 바로 필요한 물품을 쿠팡에서 구매할 수도 있습니다.
+        </div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>체크리스트가 저장되나요?</span>
+        <span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">
+          네, 체크한 항목은 브라우저 로컬 스토리지에 자동 저장됩니다. 같은 검색어로 다시 생성하면 이전 체크 상태가 복원됩니다. 다만 브라우저 데이터를 삭제하면 초기화됩니다.
+        </div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>무료로 사용할 수 있나요?</span>
+        <span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">
+          네, TripReady는 완전 무료로 제공됩니다. AI 분석부터 체크리스트 생성, 공유 기능까지 모두 무료입니다.
+        </div>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        <span>쿠팡 구매 버튼은 어떤 건가요?</span>
+        <span class="faq-arrow">▼</span>
+      </div>
+      <div class="faq-answer">
+        <div class="faq-answer-inner">
+          각 준비물 옆의 구매 버튼을 클릭하면 쿠팡 검색 결과로 이동합니다. 이 링크는 쿠팡 파트너스 프로그램의 일환으로, 구매 시 일정액의 수수료를 제공받을 수 있습니다. 이용자에게는 추가 비용이 발생하지 않습니다.
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== Toast ===== -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== Scroll to Top ===== -->
+<button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로">↑</button>
+
+<!-- ===== Footer ===== -->
 <footer>
-  <p>TripReady &copy; 2026 — AI 여행 준비물 체크리스트</p>
-  <div class="disclosure">
-    이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.<br>
-    본 사이트의 AI 추천은 참고용이며, 실제 여행 시 개인 상황에 맞게 조정하시기 바랍니다.
+  <div class="footer-inner">
+    <div class="footer-logo">✈️ Trip<span>Ready</span></div>
+    <p>AI 기반 맞춤 여행 준비물 체크리스트</p>
+    <p>&copy; 2026 TripReady. All rights reserved.</p>
+    <div class="disclosure">
+      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.<br>
+      본 사이트의 AI 추천은 참고용이며, 실제 여행 시 개인 상황에 맞게 조정하시기 바랍니다.
+    </div>
+    <!-- Bottom Banner -->
+    <a class="coupang-banner" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" style="margin-top:24px;" onclick="return handleCoupangClick(this);">
+      <span class="banner-label">AD</span>
+      <span class="banner-text">🎁 쿠팡 오늘의 특가</span>
+      <span class="banner-sub">매일 달라지는 할인 혜택을 확인하세요</span>
+    </a>
   </div>
-  <!-- Bottom Banner -->
-  <a class="coupang-banner" href="https://link.coupang.com/a/cmav3O" target="_blank" rel="noopener noreferrer" style="margin-top:24px;" onclick="return handleCoupangClick(this);">
-    <span class="banner-label">광고</span>
-    <span class="banner-text">🎁 쿠팡 오늘의 특가</span>
-    <span class="banner-sub">매일 달라지는 할인 혜택을 확인하세요</span>
-  </a>
 </footer>
 
 <script>
-// === API Key (obfuscated) ===
+// ===== API Key (obfuscated) =====
 const _EK = 'LawFinder2026!@#';
 function _d(e){const d=atob(e);let r='';for(let i=0;i<d.length;i++)r+=String.fromCharCode(d.charCodeAt(i)^_EK.charCodeAt(i%_EK.length));return r;}
 const _KEYS = { ai: _d('PwpaNhsBDkgIRFNFQEoVSjgRQiIQXwsgFHADfgJVdFV+KS4ALTQrLh1XAGsCVCtqDlIhBDMEKhEwYXt4UxkFUQALPwIOLzs3RlRRU05pFmYrCyN1KwIGDjR4Y2VnGBBIeQtCBw4HISQqY3FCWUh2YhZYIApRBBcwPmpyWFtoLnwWVCI2LwFRCTNDdntVdHkVHBEoMFpYJlc3VkJjUE83Ty4xAAc=') };
@@ -435,35 +841,103 @@ const _KEYS = { ai: _d('PwpaNhsBDkgIRFNFQEoVSjgRQiIQXwsgFHADfgJVdFV+KS4ALTQrLh1X
 document.addEventListener('DOMContentLoaded', function() {
   localStorage.setItem('openaiKey', _KEYS.ai);
   loadTheme();
+  renderRecentSearches();
 });
 
-// === Theme ===
+// ===== Theme =====
 function loadTheme() {
   const saved = localStorage.getItem('tripready-theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
-  document.querySelector('.theme-toggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeBtn').textContent = saved === 'dark' ? '☀️' : '🌙';
 }
 function toggleTheme() {
   const current = document.documentElement.getAttribute('data-theme');
   const next = current === 'dark' ? 'light' : 'dark';
   document.documentElement.setAttribute('data-theme', next);
   localStorage.setItem('tripready-theme', next);
-  document.querySelector('.theme-toggle').textContent = next === 'dark' ? '☀️' : '🌙';
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
 }
 
-// === Scroll to Top ===
+// ===== Navbar scroll behavior =====
+let lastScrollY = 0;
 window.addEventListener('scroll', () => {
-  document.querySelector('.scroll-top').classList.toggle('show', window.scrollY > 400);
-});
+  const navbar = document.getElementById('navbar');
+  const scrollTopBtn = document.getElementById('scrollTopBtn');
+  const y = window.scrollY;
 
-// === Example Chips ===
+  navbar.classList.toggle('scrolled', y > 10);
+  scrollTopBtn.classList.toggle('show', y > 500);
+  lastScrollY = y;
+}, { passive: true });
+
+// ===== Quick Filters =====
+function applyFilter(el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const filterText = el.dataset.filter;
+  const input = document.getElementById('tripInput');
+  const currentVal = input.value.trim();
+  if (!currentVal) {
+    input.value = filterText + ' ';
+  } else if (!currentVal.includes(filterText)) {
+    input.value = filterText + ' ' + currentVal;
+  }
+  input.focus();
+}
+
+// ===== Example Chips =====
 function setExample(el) {
   const text = el.textContent.replace(/^[^\s]+\s/, '');
   document.getElementById('tripInput').value = text;
   document.getElementById('tripInput').focus();
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
 }
 
-// === Coupang Link ===
+// ===== Recent Searches =====
+const MAX_RECENT = 5;
+function getRecentSearches() {
+  try {
+    return JSON.parse(localStorage.getItem('tripready-recent') || '[]');
+  } catch { return []; }
+}
+function addRecentSearch(query) {
+  let recent = getRecentSearches().filter(q => q !== query);
+  recent.unshift(query);
+  if (recent.length > MAX_RECENT) recent = recent.slice(0, MAX_RECENT);
+  localStorage.setItem('tripready-recent', JSON.stringify(recent));
+  renderRecentSearches();
+}
+function removeRecentSearch(idx) {
+  let recent = getRecentSearches();
+  recent.splice(idx, 1);
+  localStorage.setItem('tripready-recent', JSON.stringify(recent));
+  renderRecentSearches();
+}
+function renderRecentSearches() {
+  const recent = getRecentSearches();
+  const container = document.getElementById('recentSearches');
+  const list = document.getElementById('recentList');
+  if (recent.length === 0) {
+    container.classList.remove('show');
+    return;
+  }
+  container.classList.add('show');
+  list.innerHTML = recent.map((q, i) =>
+    `<span class="recent-item" onclick="useRecent(${i})">
+      <span>🕐 ${escHtml(q)}</span>
+      <span class="remove-recent" onclick="event.stopPropagation();removeRecentSearch(${i})">✕</span>
+    </span>`
+  ).join('');
+}
+function useRecent(idx) {
+  const recent = getRecentSearches();
+  if (recent[idx]) {
+    document.getElementById('tripInput').value = recent[idx];
+    document.getElementById('tripInput').focus();
+  }
+}
+
+// ===== Coupang Link =====
 const COUPANG_AF = 'AF7220529';
 function getCoupangLink(searchQuery) {
   return `https://www.coupang.com/np/search?q=${encodeURIComponent(searchQuery)}&channel=user&src=1032001&spec=10305010&addtag=400&ctag=tripready&lptag=${COUPANG_AF}`;
@@ -472,12 +946,10 @@ function handleCoupangClick(el) {
   return true;
 }
 
-// === Clean JSON ===
+// ===== Clean JSON =====
 function cleanJson(text) {
   let s = text.trim();
-  // Remove markdown code fences
   s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
-  // Find JSON object
   const start = s.indexOf('{');
   const end = s.lastIndexOf('}');
   if (start !== -1 && end !== -1) {
@@ -486,9 +958,68 @@ function cleanJson(text) {
   return JSON.parse(s);
 }
 
-// === Generate Checklist ===
+// ===== Toast =====
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ===== Share =====
+function shareChecklist() {
+  const url = window.location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('📋 URL이 클립보드에 복사되었습니다!');
+    }).catch(() => {
+      showToast('URL 복사에 실패했습니다.');
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 URL이 클립보드에 복사되었습니다!');
+  }
+}
+
+// ===== Reset All Checks =====
+function resetAllChecks() {
+  if (!currentSavedKey) return;
+  checkStates = {};
+  localStorage.setItem(currentSavedKey, JSON.stringify(checkStates));
+  document.querySelectorAll('.check-box').forEach(cb => {
+    cb.classList.remove('checked');
+    cb.closest('.checklist-item').classList.remove('checked');
+  });
+  let total = document.querySelectorAll('.check-box').length;
+  updateProgress(0, total);
+  showToast('🔄 모든 체크가 해제되었습니다');
+}
+
+// ===== FAQ Accordion =====
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  const answer = item.querySelector('.faq-answer');
+  const isOpen = item.classList.contains('open');
+
+  // Close all
+  document.querySelectorAll('.faq-item.open').forEach(fi => {
+    fi.classList.remove('open');
+    fi.querySelector('.faq-answer').style.maxHeight = '0';
+  });
+
+  if (!isOpen) {
+    item.classList.add('open');
+    answer.style.maxHeight = answer.scrollHeight + 'px';
+  }
+}
+
+// ===== Generate Checklist =====
 let currentData = null;
 let checkStates = {};
+let currentSavedKey = null;
 
 async function generateChecklist() {
   const input = document.getElementById('tripInput').value.trim();
@@ -498,7 +1029,7 @@ async function generateChecklist() {
   btn.disabled = true;
   btn.classList.add('loading');
   btn.querySelector('.loading-text').style.display = 'inline';
-  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('skeletonLoading').classList.add('show');
   document.getElementById('resultArea').style.display = 'none';
   hideError();
 
@@ -518,12 +1049,13 @@ async function generateChecklist() {
         messages: [
           {
             role: 'system',
-            content: '여행 준비물 전문가. 여행지/기간/유형에 맞는 준비물을 카테고리별로 추천. 반드시 JSON으로만 응답: {"destination":"여행지","summary":"여행요약","categories":[{"name":"카테고리","emoji":"이모지","items":[{"item":"준비물","essential":true/false,"tip":"팁","searchQuery":"쿠팡검색어"}]}]}'
+            content: `여행 준비물 전문가. 여행지/기간/유형에 맞는 준비물을 카테고리별로 추천.
+카테고리는 반드시 다음을 포함: 의류, 세면도구, 전자기기, 서류, 기타.
+각 아이템에 아이콘(emoji 1개)을 포함할 것.
+반드시 JSON으로만 응답:
+{"destination":"여행지","summary":"여행요약","categories":[{"name":"카테고리","emoji":"이모지","items":[{"item":"준비물","icon":"아이콘이모지","essential":true/false,"tip":"팁","searchQuery":"쿠팡검색어"}]}]}`
           },
-          {
-            role: 'user',
-            content: input
-          }
+          { role: 'user', content: input }
         ]
       })
     });
@@ -537,8 +1069,12 @@ async function generateChecklist() {
     const content = data.choices[0].message.content;
     currentData = cleanJson(content);
 
+    // Save to recent
+    addRecentSearch(input);
+
     // Load saved check states
     const savedKey = 'tripready-checks-' + btoa(unescape(encodeURIComponent(input)));
+    currentSavedKey = savedKey;
     const saved = localStorage.getItem(savedKey);
     checkStates = saved ? JSON.parse(saved) : {};
 
@@ -555,7 +1091,7 @@ function resetBtn() {
   btn.disabled = false;
   btn.classList.remove('loading');
   btn.querySelector('.loading-text').style.display = 'none';
-  document.getElementById('loadingOverlay').classList.remove('show');
+  document.getElementById('skeletonLoading').classList.remove('show');
 }
 
 function showError(msg) {
@@ -567,7 +1103,7 @@ function hideError() {
   document.getElementById('errorMsg').classList.remove('show');
 }
 
-// === Render ===
+// ===== Render Result =====
 function renderResult(data, savedKey) {
   // Summary
   document.getElementById('summaryCard').innerHTML = `
@@ -590,17 +1126,20 @@ function renderResult(data, savedKey) {
       const isChecked = checkStates[key] === true;
       totalItems++;
       if (isChecked) checkedItems++;
+      const icon = item.icon || '';
+      const isEssential = item.essential;
       itemsHtml += `
         <li class="checklist-item ${isChecked ? 'checked' : ''}">
           <div class="check-box ${isChecked ? 'checked' : ''}" data-key="${key}" onclick="toggleCheck(this, '${savedKey}')"></div>
           <div class="item-info">
             <div class="item-top">
+              ${icon ? `<span class="item-icon">${icon}</span>` : ''}
               <span class="item-name">${escHtml(item.item)}</span>
-              ${item.essential ? '<span class="essential-badge">필수</span>' : ''}
+              ${isEssential ? '<span class="badge badge-essential">필수</span>' : '<span class="badge badge-recommend">추천</span>'}
             </div>
             ${item.tip ? `<div class="item-tip">💡 ${escHtml(item.tip)}</div>` : ''}
             <div class="item-actions">
-              <a class="coupang-link" href="${getCoupangLink(item.searchQuery)}" target="_blank" rel="noopener noreferrer">🛒 쿠팡에서 구매</a>
+              <a class="coupang-link" href="${getCoupangLink(item.searchQuery || item.item)}" target="_blank" rel="noopener noreferrer">🛒 쿠팡에서 구매</a>
             </div>
           </div>
         </li>
@@ -610,6 +1149,7 @@ function renderResult(data, savedKey) {
       <div class="category-header">
         <span class="category-emoji">${cat.emoji}</span>
         <span>${escHtml(cat.name)}</span>
+        <span class="category-count">${cat.items.length}개</span>
       </div>
       <ul class="checklist">${itemsHtml}</ul>
     `;
@@ -619,22 +1159,35 @@ function renderResult(data, savedKey) {
   // Progress
   updateProgress(checkedItems, totalItems);
 
+  // Show result
   document.getElementById('resultArea').style.display = 'block';
-  document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('navProgressMini').classList.add('show');
+
+  // Smooth scroll to result
+  setTimeout(() => {
+    document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
 }
 
 function updateProgress(checked, total) {
   const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+
+  // Main progress
   document.getElementById('progressSection').innerHTML = `
     <div class="progress-header">
       <h3>📋 준비 현황</h3>
-      <span class="progress-count">${checked}/${total} 준비 완료</span>
+      <span class="progress-count">${checked} / ${total} 준비 완료</span>
     </div>
     <div class="progress-bar">
       <div class="progress-fill" style="width:${pct}%"></div>
     </div>
-    <p class="progress-text">${pct === 100 ? '🎉 모든 준비물을 챙겼어요!' : `${pct}% 완료 — 화이팅! ✈️`}</p>
+    <p class="progress-text">${pct === 100 ? '🎉 모든 준비물을 챙겼어요! 즐거운 여행 되세요!' : `${pct}% 완료 — 화이팅! ✈️`}</p>
   `;
+
+  // Nav mini progress
+  document.getElementById('navProgressText').textContent = `${pct}%`;
+  document.getElementById('navProgressFill').style.width = `${pct}%`;
+  document.getElementById('navProgressCount').textContent = `${checked}/${total}`;
 }
 
 function toggleCheck(el, savedKey) {
